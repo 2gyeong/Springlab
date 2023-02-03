@@ -14,7 +14,7 @@
 </head>
 <body>
 <center>
-	<form action="getMember.do" method="post">
+	<form action="updateMember.do" method="post">
 		<input type="hidden" name="idx" value="<%= member.getIdx() %>">
 	<table border="1" cellspacing="0" cellpadding="0">
 		<tr>
@@ -59,14 +59,14 @@
 		
 		<tr>
 			<td colspan ="2" align="right"> <input type="submit" value="글 수정"></td>
-			<td></td>
 			</tr>
 	</table>
 	</form>
 	
 	<p>
 	<a href="insertMember.jsp"> 회원가입 </a> &nbsp;&nbsp;&nbsp;
-	<a href="getMemberList.jsp"> 회원 목록 </a>
+	<a href="deleteMember.do?idx=<%= member.getIdx() %>"> 회원삭제 </a> &nbsp;&nbsp;&nbsp;
+	<a href="getMemberList.do"> 회원목록 </a>
 	
 
 </center>

@@ -13,6 +13,8 @@ import javax.servlet.http.HttpSession;
 import com.springlab.member.MemberDAO;
 import com.springlab.member.MemberDTO;
 
+
+
 // @WebServlet("/DispatcherServlet")
 public class DispatcherServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -22,8 +24,6 @@ public class DispatcherServlet extends HttpServlet {
     }
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		response.getWriter().append("Served at: ").append(request.getContextPath());
-		
 		process(request, response);
 	}
 
@@ -59,20 +59,19 @@ public class DispatcherServlet extends HttpServlet {
 			
 			// b. 클라이언트에서 넘긴 변수값을 받아서 저장된 변수를 DTO에 Setter 주입
 			MemberDTO dto = new MemberDTO();
-			
+			MemberDAO dao = new MemberDAO();
 			
 			dto.setId(id);
 			dto.setPass(pass);
 			
+			
+			//cnt 1씩 증가	
+			dao.loginCount(dto);
+			
 			// c. 비즈니스 로직을 처리하는 인터페이스에 dto를 주입해서 비즈니스 로직을 처리
 			
-			MemberDAO member = new MemberDAO();
-			MemberDTO memberD = member.getMember(dto);
-			
-			System.out.println(memberD);
-			
 			// D. View 페이지로 이동
-			if(memberD != null) {
+			if(dao.Login(dto)) {
 				response.sendRedirect("getMemberList.do");
 				System.out.println("아이디와 패스워드 일치");
 
@@ -116,36 +115,23 @@ public class DispatcherServlet extends HttpServlet {
 			dto.setName(name);
 			dto.setEmail(email);
 			dto.setAge(age);
-			dto.setEmail(email);
+			dto.setWeight(weight);
 			
 			dao.insertMember(dto);
 			
 			response.sendRedirect("getMemberList.do");
 			
 			
-		}  else if(path.equals("/getMemberList.do")) {
-			System.out.println("MemberList 출력");
-			
-			MemberDTO dto = new MemberDTO();
-			MemberDAO dao = new MemberDAO();
-			
-			List<MemberDTO> memberList = dao.getMemberList(dto);
-			
-			HttpSession session = request.getSession();
-			
-			response.sendRedirect("getMemberList.jsp");
-			
-		}  else if(path.equals("/getMember.do")) {
+		} else if(path.equals("/getMember.do")) {
 			System.out.println("member 상세 페이지 보기");
 			
 			String idx = request.getParameter("idx");
+			System.out.println("idx 값 : " + idx);
 			
 			MemberDTO dto = new MemberDTO();
 			MemberDAO dao = new MemberDAO();
 			
 			dto.setIdx(Integer.parseInt(idx));
-			
-			System.out.println("idx 값 : " + idx);
 			
 			MemberDTO member = dao.getMember(dto);
 			
@@ -159,12 +145,12 @@ public class DispatcherServlet extends HttpServlet {
 		}  else if(path.equals("/deleteMember.do")) {
 			System.out.println("member 정보 삭제");
 			
-			String idx = request.getParameter("idx");
+			int idx = Integer.parseInt(request.getParameter("idx"));
 			
 			MemberDTO dto = new MemberDTO();
 			MemberDAO dao = new MemberDAO();
 			
-			dto.setIdx(Integer.parseInt(idx));
+			dto.setIdx(idx);
 			
 			dao.deleteMember(dto);
 			
@@ -172,24 +158,26 @@ public class DispatcherServlet extends HttpServlet {
 
 			
 		}  else if(path.equals("/updateMember.do")) {
-			System.out.println("member 정보 수정");
+			System.out.println("member 정보 수정 처리 ");
 			
+			String idx = request.getParameter("idx");	
 			String pass = request.getParameter("pass");
-			String name = request.getParameter("name");
-			String email = request.getParameter("email");
-			int age = Integer.parseInt(request.getParameter("age")) ;
-			double weight = Double.parseDouble(request.getParameter("weight"));
+			String weight = request.getParameter("weight");
+			
+			System.out.println("idx 값 : " + idx);
+			System.out.println("pass 값 :" + pass);
+			System.out.println("weight 값 : " + weight);
 			
 			MemberDTO dto = new MemberDTO();
 			MemberDAO dao = new MemberDAO();
 			
+			dto.setIdx(Integer.parseInt(idx));
 			dto.setPass(pass);
-			dto.setName(name);
-			dto.setEmail(email);
-			dto.setAge(age);
-			dto.setEmail(email);
+			dto.setWeight(Double.parseDouble(weight));
 			
-			dao.insertMember(dto);
+			dao.updateMember(dto);
+			
+
 			
 			response.sendRedirect("getMemberList.do");
 		} 

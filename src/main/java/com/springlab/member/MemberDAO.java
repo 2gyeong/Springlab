@@ -19,13 +19,51 @@ public class MemberDAO {
 	private PreparedStatement pstmt = null;
 	private ResultSet rs = null;
 	
+	private final String MEMBER_LOGIN = "select * from member where id=? and pass=?";
 	private final String MEMBER_GET = "select * from member where idx = ?";
 	private final String MEMBER_INSERT = "insert into member(idx, id, pass, name, email, age, weight) "
 			+ "values((select nvl(max(idx),0)+1 from member),?,?,?,?,?,?)";
 	private final String MEMBER_LIST = "select * from member order by idx desc";
 	private final String MEMBER_DELETE = "delete member where idx=?";
-	private final String MEMBER_UPDATE = "update member set pass=?, name=?, email=?, age=?, weight=?";
+	private final String MEMBER_UPDATE = "update member set pass=?, weight=? where idx = ?";
+	private final String LOGIN_COUNT = "update member set cnt=((select cnt from member where id=?)+1) where id=?";
 	
+	// 로그인 
+	public Boolean Login(MemberDTO dto) {
+		
+		MemberDTO member = null ;
+		
+		System.out.println("로그인 DAO - " + dto.getId());
+		System.out.println("로그인 DAO - " + dto.getPass());
+		
+		try {
+			System.out.println("로그인 - 시작");
+			
+			conn = JDBCUtil.getConnection();
+			pstmt = conn.prepareStatement(MEMBER_LOGIN);
+			
+			pstmt.setString(1, dto.getId());
+			pstmt.setString(2, dto.getPass());
+			
+			rs = pstmt.executeQuery();
+			
+			if(rs.next()) {
+				System.out.println("DB에서 select되었습니다.");
+				return true;
+			} else {
+				return false;
+			}
+			
+		}catch(Exception e) {
+			e.printStackTrace();
+			System.out.println("오류 발생 - 로그인 실패");
+		} finally {
+			JDBCUtil.close(rs, pstmt, conn);
+		}
+		
+		return false;
+	}
+
 	// 1. getMember()
 	public MemberDTO getMember(MemberDTO dto) {
 		System.out.println("JDBC로 getMember() 기능 처리 - 시작");
@@ -40,11 +78,11 @@ public class MemberDAO {
 			
 			pstmt.setInt(1, dto.getIdx());
 			
+			
 			rs = pstmt.executeQuery();
 			
 			if(rs.next()) {
-				member = new MemberDTO();
-				
+			
 				System.out.println("DB에서 잘 select 되었습니다.");
 				
 				member.setIdx(rs.getInt("IDX"));
@@ -56,13 +94,15 @@ public class MemberDAO {
 				member.setWeight(rs.getDouble("WEIGHT"));
 				member.setRegdate(rs.getString("REGDATE"));
 				member.setCnt(rs.getInt("CNT"));
-				
-				System.out.println("JDBC로 DB를 잘 쿼리해서 DTO로 잘 전송");
+
+			} else {
+				System.out.println("레코드 결과가 없습니다.");
 			}
 			
+			System.out.println(" JDBC로 getMember() 기능 처리 - 완료");
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.out.println("JDBC로 쿼리 실행 중 오류 발생");
+			System.out.println(" JDBC로 getMember() 기능 처리 - 실패");
 		} finally {
 			JDBCUtil.close(rs, pstmt, conn);
 		}
@@ -158,7 +198,7 @@ public class MemberDAO {
 		conn = JDBCUtil.getConnection();
 		pstmt = conn.prepareStatement(MEMBER_DELETE);
 		pstmt.setInt(1, dto.getIdx());
-		pstmt.executeQuery();
+		pstmt.executeUpdate();
 		
 		System.out.println("JDBC로 deleteMember() 기능 처리 - 완료");
 	} catch(Exception e) {
@@ -180,13 +220,11 @@ public class MemberDAO {
 		conn = JDBCUtil.getConnection();
 		pstmt = conn.prepareStatement(MEMBER_UPDATE);
 
-		//update member set pass=?, name=?, email=?, age=?, weight=?
 		pstmt.setString(1, dto.getPass());
-		pstmt.setString(2,dto.getName());
-		pstmt.setString(3,dto.getEmail());
-		pstmt.setString(4,dto.getName());
-		pstmt.setInt(5, dto.getAge());
-		pstmt.setDouble(6, dto.getWeight());
+		pstmt.setDouble(2,dto.getWeight());
+		pstmt.setInt(3, dto.getIdx());
+		
+		pstmt.executeUpdate();
 		
 		System.out.println("JDBC로 updateMember() 기능 처리 - 완료");
 
@@ -198,7 +236,24 @@ public class MemberDAO {
 		}
 	}
 	
-	
+	public void loginCount(MemberDTO dto) {
+		try {
+		conn = JDBCUtil.getConnection();
+		pstmt = conn.prepareStatement(LOGIN_COUNT);
+		
+		pstmt.setString(1, dto.getId());
+		pstmt.setString(2, dto.getId());
+		
+		pstmt.executeUpdate();
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+			JDBCUtil.close(pstmt, conn);
+		}
+		
+
+		
+	}
 	
 	
 	
